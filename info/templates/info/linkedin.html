@@ -1,0 +1,65 @@
+{% extends 'info/base.html' %}
+    {% load static %}
+
+    {% block content %}
+                  <div class="card mb-3">
+            <div class="card-header">
+              <i class="fas fa-table"></i>
+            <b>LinkedIn</b></div>
+            <div class="card-body">
+              <form method="post">
+                <input type="text" placeholder="Enter Hashtag">
+                <input type="text" placeholder="Enter Email Amount">
+                <button  class="btn btn-success" type="submit">Search</button>
+              </form>
+              <div class="table-responsive">
+                <table class="table table-bordered text-center" id="dataTable" width="100%" cellspacing="0">
+                  <thead class="thead-light ">
+                    <tr>
+                        <th>Keyword / USERNAMES</th>
+                        <th>PROGRESS</th>
+                        <th>PLATFORM</th>
+                        <th>STATUS</th>
+                        <th>EMAIL</th>
+                        <th>DATE</th>
+                        <th>DOWNLOAD</th>
+                        <th>ACTION</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <!-- {% for a in att_list %}
+                    <tr>
+                        <td>{{ a.course_id }}</td>
+                        <td><a href="{% url 'attendance_detail' a.student.USN a.course.id %}">{{a.course.name}}</a></td>
+                        <td>{{ a.att_class }}</td>
+                        <td>{{ a.total_class }}</td>
+                        {% if a.attendance < 75 %}
+                            <td class="p-3 mb-2 bg-danger text-white">{{ a.attendance }}</td>
+                        {% else %}
+                            <td class="p-3 mb-2 bg-success text-white">{{ a.attendance }}</td>
+                        {% endif %}
+                        <td>{{ a.classes_to_attend }}</td>
+                    </tr>
+                    {% empty %}
+                            <p>student has no courses</p>
+                    {% endfor %} -->
+                    <tr>
+                        <td>test</td>
+                        <td>100%</td>
+                        <td>Facebook</td>
+                        <td>Completed</td>
+                        <td>1255</td>
+                        <td>2022-12-23</td>
+                        <td><button>Download</button></td>
+                        <td><button>Delete</button></td>
+                        <td>{{ a.classes_to_attend }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+
+    {% endblock %}
+
