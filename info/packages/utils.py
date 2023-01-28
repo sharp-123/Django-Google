@@ -7,12 +7,12 @@ from fake_useragent import UserAgent
 from googlesearch import search
 
 
-def store_urls(search_term: str, total_urls: int, section: str) -> str:
+def store_urls(search_term: str, total_urls: int, platform: str) -> str:
     """Store the urls from Google search results"""
     print("getting urls....")
 
     try:
-        urls = set(search(f"{search_term+' '+section}", num_results=int(total_urls)))
+        urls = set(search(f"{search_term+' '+platform}", tld="com", num=int(total_urls), stop=10, pause=2))
         print("--------------------------------------------")
         print(urls)
         # with open(fpath, "w", encoding="utf-8") as fn:

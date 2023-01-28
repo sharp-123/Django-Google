@@ -133,6 +133,25 @@ class AssignTime(models.Model):
     period = models.CharField(max_length=50, choices=time_slots, default='11:00 - 11:50')
     day = models.CharField(max_length=15, choices=DAYS_OF_WEEK)
 
+class Process(models.Model):
+    PLATFORM=(
+        ('Instagram','Instagram'),
+        ('Facebook','Facebook'),
+        ('LinkedIn','LinkedIn'),
+        ('TikTok','TikTok'),
+        ('Youtube','Youtube'),
+        ('Twitter','Twitter')
+    )
+    hashtag=models.CharField(max_length=300)
+    platform=models.CharField(choices=PLATFORM,max_length=9)
+    date=models.DateField(auto_now_add=True)
+class ScrapedData(models.Model):
+    homepage=models.CharField(max_length=500)
+    email=models.CharField(max_length=100)
+    process=models.ForeignKey(
+        Process,
+        on_delete=models.CASCADE,
+        verbose_name="the related Process")
 
 class AttendanceClass(models.Model):
     assign = models.ForeignKey(Assign, on_delete=models.CASCADE)

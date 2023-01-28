@@ -12,6 +12,8 @@ urlpatterns = [
          views.attendance, name='attendance'),
     path('student/<slug:stud_id>/attendance/search/',
          views.attendance_search, name='attendance_search'),
+    path('student/<slug:stud_id>/attendance/downloadCSV/',
+         views.downloadCSV, name='downloadCSV'),
     path('student/<slug:stud_id>/linkedin/',
          views.linkedin, name='linkedin'),
     path('student/<slug:stud_id>/tiktok/',

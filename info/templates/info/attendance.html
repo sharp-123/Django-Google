@@ -2,7 +2,7 @@
 {% load static %}
 {% block css %}
 <style>
-  .progress {
+  .progress-status {
     display: flex;
     justify-content: center;
     background: inherit;
@@ -73,15 +73,15 @@
         <tbody class="result-table">
           <tr class="template-row">
             <td class="tag-name">test</td>
-            <td class="progress">
+            <td class="progress-status">
               <div class='loader'></div>
             </td>
             <td>Facebook</td>
             <td class="status">...in progress</td>
             <td class="emails"></td>
             <td class="date">2022-12-23</td>
-            <td><button>Download</button></td>
-            <td><button>Delete</button></td>
+            <td class="download"><button onclick="downloadCSV(id)">Download</button></td>
+            <td class="delete"><button>Delete</button></td>
           </tr>
         </tbody>
       </table>
@@ -94,6 +94,7 @@
 {% endblock %}
 {% block scripts %}
 <script>
+  let search_state=false
   function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== "") {
@@ -109,10 +110,32 @@
     }
     return cookieValue;
   }
+
+  function downloadCSV(id)
+  {
+    $.ajax({
+        url: "{% url 'downloadCSV' request.user.student.USN  %}",
+        type: "POST",
+        data: JSON.stringify({ id:id }),
+        dataType: "json",
+        headers: {
+          "X-Requested-With": "XMLHttpRequest",
+          "X-CSRFToken": getCookie("csrftoken"),  // don't forget to include the 'getCookie' function
+        },
+        success: (data) => {
+          console.log(data);
+        },
+        error: (error) => {
+          console.log(error);
+        }
+      });
+  }
   const currentDate = new Date();
   const options = { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' };
   $(document).ready(function () {
     $("#search_email").click(function () {
+      if(search_state==true)
+        return;
       let hashtag = $("input[name= 'hashtag']").val();
       let amount = $("input[name= 'amount']").val();
       let row = $(".template-row").clone();
@@ -121,6 +144,7 @@
       row.find('.date').text(currentDate.toLocaleDateString('en-us', options));
       row.removeClass('template-row');
       row.appendTo(".result-table");
+      search_state=true
       $.ajax({
         url: "{% url 'attendance_search' request.user.student.USN %}",
         type: "POST",
@@ -132,9 +156,17 @@
         },
         success: (data) => {
           console.log(data);
+          $("tbody tr:last .loader").remove();
+          $("tbody tr:last .progress-status").text("completed");
+          $("tbody tr:last .status").text("success");
+          $("tbody tr:last .emails ").text(data.num);
+          $("tbody tr:last").attr('id',data.process_id);
+          $("tbody tr:last .download button").attr("onClick","downloadCSV("+data.process_id+")")
+          search_state=false
         },
         error: (error) => {
           console.log(error);
+          search_state=true;
         }
       });
     })

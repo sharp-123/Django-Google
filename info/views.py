@@ -1,13 +1,16 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import HttpResponseRedirect, JsonResponse
+from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
+from django.shortcuts import render
 from .models import Dept, Class, Student, Attendance, Course, Teacher, Assign, AttendanceTotal, time_slots, \
-    DAYS_OF_WEEK, AssignTime, AttendanceClass, StudentCourse, Marks, MarksClass
+    DAYS_OF_WEEK, AssignTime, AttendanceClass, StudentCourse, Marks, MarksClass, Process, ScrapedData
 from django.urls import reverse
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
 
 from fake_useragent import UserAgent
+import csv
+from django.shortcuts import render
 from .packages.utils import (
     emails_to_file,
     take_input,
@@ -63,7 +66,15 @@ def attendance(request, stud_id):
             a = AttendanceTotal(student=stud, course=ass.course)
             a.save()
         att_list.append(a)
-    return render(request, 'info/attendance.html', {'att_list': att_list, 'state': flg})
+
+    processes = list(Process.objects.all().prefetch_related('scrapedData_set').values())
+    # return JsonResponse({"emails": processes}, status=200)
+
+    processes=[]
+    for process in processes:
+        processes.append(process)
+    # return render(request, 'info/attendance.html', {'att_list': att_list, 'process':processes, 'state': flg})
+    return render(request, 'info/attendance.html', {'att_list': att_list,'state': flg})
 
 
 @login_required()
@@ -89,7 +100,8 @@ def attendance_search(request, stud_id):
 
     print(f"Found {len(searches_items)} search terms!, {searches_items}")
     ua = UserAgent()
-    urls = store_urls(searches_items, count, section="")
+    urls = store_urls(searches_items, count, platform="facebook.com")
+    new_process=Process.objects.create(hashtag=searches_items,platform="facebook")
     unique_emails = []
     # with open(file_name, "r", encoding="utf-8") as url_file:
     for url_no, url in enumerate(urls):
@@ -97,6 +109,8 @@ def attendance_search(request, stud_id):
         if not url.endswith(".pdf"):
             if req_delay:
                 time.sleep(req_delay)
+            if("facebook.com" not in url):
+                continue
             emails, msg = get_emails(url.strip(), ua.random)
             if msg == "break":
                 # emails_to_file(searches_items, unique_emails)
@@ -109,14 +123,22 @@ def attendance_search(request, stud_id):
                 for email in emails:
                     if email not in unique_emails:
                         if email.endswith((".com", ".net", ".org")):
+                            ScrapedData.objects.create(homepage=url.strip(),email=email, process=new_process)
                             unique_emails.append(email)
             else:
                 continue
     print('result here')
     print(unique_emails)
-    return JsonResponse({"emails": unique_emails}, status=200)
-    return JsonResponse(unique_emails)
+    return JsonResponse({"emails": unique_emails,"num":len(unique_emails), "process_id":new_process.id}, status=200)
 
+@login_required()
+def downloadCSV(request,stud_id):
+    response = HttpResponse('text/csv')
+    response['Content-Disposition'] = 'attachment; filename=download.csv'
+    writer = csv.writer(response)
+    writer.writerow(['Keywords', 'Platfrom',"urls","email","Date"])
+    emails = Process.objects.all().prefetch_related('scrapedData_set')
+    return JsonResponse({"emails": emails, "id":id}, status=200)
 
 @login_required()
 def linkedin(request, stud_id):
