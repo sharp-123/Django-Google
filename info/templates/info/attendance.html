@@ -20,7 +20,7 @@
     animation: spin 2s linear infinite;
   }
 
-  .template-row{
+  .template-row {
     display: none;
   }
 
@@ -94,7 +94,7 @@
 {% endblock %}
 {% block scripts %}
 <script>
-  let search_state=false
+  let search_state = false
   function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== "") {
@@ -111,30 +111,33 @@
     return cookieValue;
   }
 
-  function downloadCSV(id)
-  {
+  function downloadCSV(id) {
     $.ajax({
-        url: "{% url 'downloadCSV' request.user.student.USN  %}",
-        type: "POST",
-        data: JSON.stringify({ id:id }),
-        dataType: "json",
-        headers: {
-          "X-Requested-With": "XMLHttpRequest",
-          "X-CSRFToken": getCookie("csrftoken"),  // don't forget to include the 'getCookie' function
-        },
-        success: (data) => {
-          console.log(data);
-        },
-        error: (error) => {
-          console.log(error);
-        }
-      });
+      url: "{% url 'downloadCSV' request.user.student.USN  %}",
+      type: "POST",
+      data: JSON.stringify({ id: id }),
+      headers: {
+        "X-Requested-With": "XMLHttpRequest",
+        "X-CSRFToken": getCookie("csrftoken"),  // don't forget to include the 'getCookie' function
+      },
+      success: (data) => {
+        let element = document.createElement('a');
+        element.href = 'data:text/csv;charset=utf-8,' + encodeURI(data);
+        element.target = '_blank';
+        element.download = 'csv_data.csv';
+        element.click();
+        console.log(element)
+      },
+      error: (error) => {
+        console.log(error);
+      }
+    });
   }
   const currentDate = new Date();
   const options = { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' };
   $(document).ready(function () {
     $("#search_email").click(function () {
-      if(search_state==true)
+      if (search_state == true)
         return;
       let hashtag = $("input[name= 'hashtag']").val();
       let amount = $("input[name= 'amount']").val();
@@ -144,7 +147,7 @@
       row.find('.date').text(currentDate.toLocaleDateString('en-us', options));
       row.removeClass('template-row');
       row.appendTo(".result-table");
-      search_state=true
+      search_state = true
       $.ajax({
         url: "{% url 'attendance_search' request.user.student.USN %}",
         type: "POST",
@@ -160,13 +163,13 @@
           $("tbody tr:last .progress-status").text("completed");
           $("tbody tr:last .status").text("success");
           $("tbody tr:last .emails ").text(data.num);
-          $("tbody tr:last").attr('id',data.process_id);
-          $("tbody tr:last .download button").attr("onClick","downloadCSV("+data.process_id+")")
-          search_state=false
+          $("tbody tr:last").attr('id', data.process_id);
+          $("tbody tr:last .download button").attr("onClick", "downloadCSV(" + data.process_id + ")")
+          search_state = false
         },
         error: (error) => {
           console.log(error);
-          search_state=true;
+          search_state = true;
         }
       });
     })

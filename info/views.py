@@ -1,6 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
-from django.shortcuts import render
 from .models import Dept, Class, Student, Attendance, Course, Teacher, Assign, AttendanceTotal, time_slots, \
     DAYS_OF_WEEK, AssignTime, AttendanceClass, StudentCourse, Marks, MarksClass, Process, ScrapedData
 from django.urls import reverse
@@ -133,13 +132,32 @@ def attendance_search(request, stud_id):
 
 @login_required()
 def downloadCSV(request,stud_id):
-    response = HttpResponse('text/csv')
-    response['Content-Disposition'] = 'attachment; filename=download.csv'
+    response = HttpResponse(content_type='text/csv')
     writer = csv.writer(response)
     writer.writerow(['Keywords', 'Platfrom',"urls","email","Date"])
-    emails = Process.objects.all().prefetch_related('scrapedData_set')
-    return JsonResponse({"emails": emails, "id":id}, status=200)
+    data = json.load(request)
+    id = data.get('id')
+    process = Process.objects.get(id=id)
+    scrapeddata=list(ScrapedData.objects.filter(process_id=id).values())
+    ret_dt=[]
+    for dt in scrapeddata:
+        ret_dt.append(dt)
+    print(process)
+    print(ScrapedData.objects.filter(process_id=id).values('homepage','email'))
+    temp=[]
+    for dt in ScrapedData.objects.filter(process_id=id):
+        writer.writerow([process.hashtag,process.platform,dt.homepage,dt.email,process.date])
+    response['Content-Disposition'] = 'attachment; filename=download.csv'
+    # return JsonResponse({"emails": temp, "id":id}, status=200)
+    return response
+    # response = HttpResponse(content_type='text/csv')
+    # response['Content-Disposition'] = 'attachment; filename=somefilename.csv'
 
+    # writer = csv.writer(response)
+    # writer.writerow(['First row', 'Foo', 'Bar', 'Baz'])
+    # writer.writerow(['Second row', 'A', 'B', 'C', '"Testing"', "Here's a quote"])
+    # return response
+    
 @login_required()
 def linkedin(request, stud_id):
     stud = Student.objects.get(USN=stud_id)
