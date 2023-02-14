@@ -11,8 +11,6 @@ from fake_useragent import UserAgent
 import csv
 from django.shortcuts import render
 from .packages.utils import (
-    emails_to_file,
-    take_input,
     get_emails,
     store_urls
 )
